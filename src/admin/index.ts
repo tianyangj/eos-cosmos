@@ -35,7 +35,7 @@ async function createBlock(blockNumber: number) {
 
 // main loop
 async function main() {
-    for (let i = 2000; i <= 10000; i++) {
+    for (let i = 100000; i <= 200000; i++) {
         await createBlock(i);
         console.log(`Finished Block #${i} at ${new Date()}`);
     }
