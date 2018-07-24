@@ -1,3 +1,4 @@
+import * as util from 'util';
 import * as Eos from 'eosjs';
 import * as DocumentDB from 'documentdb';
 
@@ -9,49 +10,49 @@ const eos = Eos({
 const cosmos = new DocumentDB.DocumentClient('https://eos.documents.azure.com:443/', {
     masterKey: 'N4fAkUrn0H8r3Cjg4h0KZLIljZGCDg6rErpi9ZOqgWCTz8FHeIx3HoqEFXkVXVxXP3KcHlAst1xIHUtduzvPrw=='
 });
-const dbUrl = `dbs/eosio`;
-const collectionUrl = `${dbUrl}/colls/items`;
-const blocksCollection = `${dbUrl}/colls/blocks`;
-const transactionsCollection = `${dbUrl}/colls/transactions`;
-const actionsCollection = `${dbUrl}/colls/actions`;
+const blocksCollsPath = `dbs/eosio/colls/blocks`;
+const transactionsCollsPath = `dbs/eosio/colls/transactions`;
 
-eos.getBlock(5121619).then(data => {
-    const { transactions, ...block } = data;
-    return new Promise((resolve, reject) => {
-        cosmos.createDocument(blocksCollection, block, (err, created) => {
-            if (err) {
-                console.log(err)
-                reject(err);
-            } else {
-                resolve(transactions);
-            }
-        });
+// promisify cosmos callbacks
+cosmos.createDocumentPromise = util.promisify(cosmos.createDocument);
+cosmos.upsertDocumentPromise = util.promisify(cosmos.upsertDocument);
+
+// create block and transactions
+async function createBlock(blockNumber: number) {
+    const { transactions, ...block } = await eos.getBlock(blockNumber);
+    const blockPromise = cosmos.upsertDocumentPromise(blocksCollsPath, {
+        ...block,
+        transactionsCount: transactions.length
     });
-    // cosmos.createDocument(blocksCollection, block, (err, created) => {
-    //     console.log('createDocument', created);
-    // });
-    // console.log(transactions)
-    // console.log(transactions[0].trx.transaction)
-
-    // if (data.transactions && data.transactions.length) {
-    //     const transactions = data.transactions;
-    //     delete data.transactions;
-    // }5121619
-    // cosmos.createDocument(blocksCollection, block, (err, created) => {
-
-    //     console.log('createDocument', created);
-    // });
-}).then(transactions => {
-    console.log(transactions)
-    const tt = transactions.map(transaction => {
-        return {
+    const transactionPromises = transactions.map(transaction => {
+        return cosmos.upsertDocumentPromise(transactionsCollsPath, {
             id: transaction.trx.id,
             ...transaction
-        };
+        });
     });
-    console.log(tt);
-});
+    return Promise.all([blockPromise, ...transactionPromises]);
+}
 
-// cosmos.readDocuments(collectionUrl).toArray((err, results) => {
-//     console.log('results', results)
+// main loop
+async function main() {
+    for (let i = 2000; i <= 10000; i++) {
+        await createBlock(i);
+        console.log(`Finished Block #${i} at ${new Date()}`);
+    }
+}
+
+main();
+
+// eos.getBlock(5121619).then(blockData => {
+//     const { transactions, ...block } = blockData;
+//     const blockPromise = cosmos.upsertDocumentPromise(blocksCollsPath, block);
+//     const transactionPromises = transactions.map(transaction => {
+//         return cosmos.upsertDocumentPromise(transactionsCollsPath, {
+//             id: transaction.trx.id,
+//             ...transaction
+//         });
+//     });
+//     return Promise.all([blockPromise, ...transactionPromises]);
+// }).then(result => {
+//     console.log(result);
 // });
