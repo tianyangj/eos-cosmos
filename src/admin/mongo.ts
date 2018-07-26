@@ -6,8 +6,9 @@ const eos = Eos({
     chainId: 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906'
 });
 
-// 'mongodb://<USER>:<PASSWORD>@eosio-shard-00-00-xfxjs.mongodb.net:27017,eosio-shard-00-01-xfxjs.mongodb.net:27017,eosio-shard-00-02-xfxjs.mongodb.net:27017/eos?ssl=true&replicaSet=eosio-shard-0&authSource=admin&retryWrites=true'
-const connectionString = 'mongodb://@eosio-shard-00-00-xfxjs.mongodb.net:27017,eosio-shard-00-01-xfxjs.mongodb.net:27017,eosio-shard-00-02-xfxjs.mongodb.net:27017/eos?ssl=true&replicaSet=eosio-shard-0&authSource=admin&retryWrites=true';
+// 'mongodb://USER:PASSWORD@eosio-shard-00-00-xfxjs.mongodb.net:27017,eosio-shard-00-01-xfxjs.mongodb.net:27017,eosio-shard-00-02-xfxjs.mongodb.net:27017/eos?ssl=true&replicaSet=eosio-shard-0&authSource=admin&retryWrites=true'
+// 'mongodb://USER:PASSWORD@159.65.110.227:27017/eos?authSource=admin'
+const connectionString = 'mongodb://@159.65.110.227:27017/eos?authSource=admin';
 
 // create block and transactions
 async function createBlock(blockNumber: number, db) {
@@ -54,3 +55,11 @@ async function main() {
 }
 
 main();
+
+// let head_block_num = 1;
+// setInterval(() => {
+//     eos.getInfo({}).then(info => {
+//         console.log(`HYDRATE RANGE [${head_block_num}, ${info.head_block_num}]`);
+//         head_block_num = info.head_block_num;
+//     });
+// }, 5000);
