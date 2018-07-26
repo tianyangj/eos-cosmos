@@ -43,7 +43,9 @@ async function main() {
             client.close();
         }
         const db = client.db('eos');
-        for (let i = 1; i <= 200; i++) {
+        const start = process.argv[2] ? Number(process.argv[2]) : 1;
+        const end = process.argv[3] ? Number(process.argv[3]) : 200;
+        for (let i = start; i <= end; i++) {
             await createBlock(i, db);
             console.log(`Finished Block #${i} at ${new Date()}`);
         }
