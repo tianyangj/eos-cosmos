@@ -24,6 +24,7 @@
     "@nestjs/microservices": "^5.0.0",
     "@nestjs/testing": "^5.0.0",
     "@nestjs/websockets": "^5.0.0",
+    "@types/mongodb": "^3.1.2",
     "documentdb": "^1.14.5",
     "eosjs": "^15.0.6",
     "mongodb": "^3.1.1",
